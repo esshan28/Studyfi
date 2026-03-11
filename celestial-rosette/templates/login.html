@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block auth_content %}
+<div class="auth-wrapper fade-in">
+    <div class="auth-card">
+        <div class="text-center mb-5">
+            <h1 class="fw-bold fs-2"><span style="color: var(--primary)">Study</span>FI</h1>
+            <p class="text-secondary">Sign in to your account</p>
+        </div>
+        
+        <form method="POST">
+            <div class="mb-4">
+                <label class="form-label small fw-semibold">EMAIL ADDRESS</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">
+                        <i class="fas fa-envelope text-muted"></i>
+                    </span>
+                    <input type="email" name="email" class="form-control form-control-custom border-start-0 ps-0" required placeholder="name@example.com">
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label class="form-label small fw-semibold">PASSWORD</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0">
+                        <i class="fas fa-lock text-muted"></i>
+                    </span>
+                    <input type="password" name="password" class="form-control form-control-custom border-start-0 ps-0" required placeholder="Enter password">
+                </div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary-custom w-100 py-3 mb-4">
+                Continue to Dashboard
+            </button>
+            
+            <div class="text-center">
+                <p class="text-secondary small mb-0">Authorized personnel only. <br> Contact support if you face issues.</p>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

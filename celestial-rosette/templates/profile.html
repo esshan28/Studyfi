@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-5 d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold">Student Portfolio</h2>
+        <p class="text-secondary text-uppercase small ls-wide">Detailed Academic Profile</p>
+    </div>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary-custom btn-sm">
+        <i class="fas fa-arrow-left me-2"></i>Back to Overview
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Profile Info -->
+    <div class="col-lg-4">
+        <div class="card-stats text-center mb-4">
+            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-block p-4 mb-4 text-primary" style="width: 100px; height: 100px;">
+                <i class="fas fa-user-graduate fa-3x"></i>
+            </div>
+            <h3 class="fw-bold mb-1">{{ student.name }}</h3>
+            <p class="text-secondary small mb-4">Student ID: #{{ student.roll_number }}</p>
+            <hr class="border-light my-4">
+            <div class="text-start">
+                <div class="mb-3 d-flex align-items-center">
+                    <i class="fas fa-envelope text-muted me-3"></i>
+                    <span class="text-secondary small">{{ student.email }}</span>
+                </div>
+                <div class="mb-3 d-flex align-items-center">
+                    <i class="fas fa-school text-muted me-3"></i>
+                    <span class="text-secondary small">Class: {{ student.class }}</span>
+                </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-user-tie text-muted me-3"></i>
+                    <span class="text-secondary small">Teacher Reference ID: {{ student.teacher_id }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-stats text-center">
+            <p class="text-secondary small mb-2 text-uppercase fw-semibold ls-wide">Attendance Progress</p>
+            <h1 class="display-3 fw-bold text-primary mb-2">{{ stats.percentage }}%</h1>
+            <div class="progress bg-light" style="height: 10px; border-radius: 5px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ stats.percentage }}%;"></div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-6">
+                    <h4 class="fw-bold mb-0">{{ stats.present }}</h4>
+                    <p class="text-secondary x-small mb-0">PRESENT</p>
+                </div>
+                <div class="col-6">
+                    <h4 class="fw-bold mb-0">{{ stats.total - stats.present }}</h4>
+                    <p class="text-secondary x-small mb-0">ABSENT</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timeline & Tasks -->
+    <div class="col-lg-8">
+        <div class="card-stats mb-4">
+            <h5 class="fw-bold mb-4"><i class="fas fa-history text-secondary me-2"></i>Attendance Timeline</h5>
+            <div class="table-responsive">
+                <table class="table table-custom mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Current Status</th>
+                            <th>Verification Method</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in history %}
+                        <tr>
+                            <td>{{ record.date }}</td>
+                            <td>
+                                <span class="badge {% if record.status == 'Present' %}bg-success bg-opacity-10 text-success{% else %}bg-danger bg-opacity-10 text-danger{% endif %} px-3 py-2">
+                                    {{ record.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="text-secondary small">
+                                    <i class="fas {% if record.session_token %}fa-qrcode text-primary{% else %}fa-hand-paper text-warning{% endif %} me-2"></i>
+                                    {{ 'Encrypted QR Scan' if record.session_token else 'Manual Log' }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-stats">
+            <h5 class="fw-bold mb-4"><i class="fas fa-tasks text-secondary me-2"></i>Task Completion</h5>
+            <div class="list-group list-group-flush">
+                {% for act in activities %}
+                <div class="list-group-item px-0 py-3 bg-transparent d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="fw-bold mb-1">{{ act.title }}</h6>
+                        <p class="text-secondary small mb-0">Post Date: {{ act.date_assigned }}</p>
+                    </div>
+                    <span class="badge {% if act.student_status == 'Pending' %}bg-warning bg-opacity-10 text-warning{% else %}bg-success bg-opacity-10 text-success{% endif %} px-3 py-2">
+                        {{ act.student_status }}
+                    </span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

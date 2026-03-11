@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-5 d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold">Administrator Console</h2>
+        <p class="text-secondary text-uppercase small ls-wide">Global System Overview | StudyFI Premium</p>
+    </div>
+    <div>
+        <a href="{{ url_for('admin_reports') }}" class="btn btn-primary-custom">
+            <i class="fas fa-chart-line me-2"></i>Full Analytics
+        </a>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-4">
+        <div class="card-stats">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary bg-opacity-10 p-3 rounded-circle text-primary me-3">
+                    <i class="fas fa-chalkboard-teacher fa-lg"></i>
+                </div>
+                <div>
+                    <h6 class="text-secondary small mb-0 fw-bold">TEACHERS</h6>
+                    <h2 class="fw-bold mb-0">{{ teachers_count }}</h2>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">Active teaching faculty</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-stats">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-success bg-opacity-10 p-3 rounded-circle text-success me-3">
+                    <i class="fas fa-user-graduate fa-lg"></i>
+                </div>
+                <div>
+                    <h6 class="text-secondary small mb-0 fw-bold">STUDENTS</h6>
+                    <h2 class="fw-bold mb-0">{{ students_count }}</h2>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">Enrolled in active sessions</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card-stats">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-warning bg-opacity-10 p-3 rounded-circle text-warning me-3">
+                    <i class="fas fa-qrcode fa-lg"></i>
+                </div>
+                <div>
+                    <h6 class="text-secondary small mb-0 fw-bold">QR SESSIONS</h6>
+                    <h2 class="fw-bold mb-0">Live</h2>
+                </div>
+            </div>
+            <div class="small text-muted mt-2">Real-time tracking active</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card-stats shadow-sm">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="fw-bold mb-0">Teacher Directory</h5>
+                <button class="btn btn-secondary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#addTeacherModal">
+                    <i class="fas fa-user-plus me-2"></i>Add Teacher
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Teacher Name</th>
+                            <th>Email Address</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for teacher in teachers %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-light rounded-circle text-primary me-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                    <span class="fw-bold">{{ teacher.name }}</span>
+                                </div>
+                            </td>
+                            <td class="text-secondary">{{ teacher.email }}</td>
+                            <td><span class="badge bg-success-soft text-success px-3">Active</span></td>
+                            <td>
+                                <button class="btn btn-sm text-primary p-0 bg-transparent border-0"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-sm text-danger p-0 bg-transparent border-0 ms-2"><i class="fas fa-trash"></i></button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card-stats h-100">
+            <h5 class="fw-bold mb-4">Global Attendance QR</h5>
+            <p class="text-secondary small mb-4">Generate a system-wide QR code for general assembly or cross-class attendance.</p>
+            
+            <div class="mb-4">
+                <label class="form-label small fw-semibold">SELECT CLASS</label>
+                <select id="admin-qr-class" class="form-select form-control-custom">
+                    <option value="ALL">All Classes</option>
+                    <option value="10A">10A</option>
+                    <option value="10B">10B</option>
+                    <option value="11A">11A</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary-custom w-100 mb-4" onclick="adminGenQR()">
+                <i class="fas fa-bolt me-2"></i>Instant QR
+            </button>
+
+            <div id="admin-qr-result" class="text-center d-none p-3 bg-light rounded-4 border border-dashed">
+                <img src="" id="admin-qr-img" class="img-fluid rounded shadow-sm mb-3">
+                <p class="small text-success fw-bold mb-0"><i class="fas fa-check-circle me-1"></i>Session Active</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="addTeacherModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 24px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Register New Teacher</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_teacher') }}" method="POST">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">FULL NAME</label>
+                        <input type="text" name="name" class="form-control form-control-custom" placeholder="e.g. Prof. Sandhu" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">EMAIL ADDRESS</label>
+                        <input type="email" name="email" class="form-control form-control-custom" placeholder="teacher@studyfi.com" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">DEFAULT PASSWORD</label>
+                        <input type="password" name="password" class="form-control form-control-custom" value="teacher123" required>
+                        <div class="form-text small">Teachers can change this upon first login.</div>
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100 py-3">Register Teacher</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function adminGenQR() {
+    const className = document.getElementById('admin-qr-class').value;
+    fetch("{{ url_for('generate_qr') }}", {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({class_name: className})
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('admin-qr-img').src = data.qr_url;
+        document.getElementById('admin-qr-result').classList.remove('d-none');
+    });
+}
+</script>
+<style>
+    .bg-success-soft { background-color: rgba(34, 197, 94, 0.1); }
+</style>
+{% endblock %}

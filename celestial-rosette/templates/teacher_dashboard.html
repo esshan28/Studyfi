@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-5 d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold text-primary-custom" style="color: var(--primary)">Teacher Dashboard</h2>
+        <p class="text-secondary text-uppercase small ls-wide">Academic Year 2026 | Punjab Education Board</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-secondary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#enrollModal">
+            <i class="fas fa-plus me-2"></i>New Enrollment
+        </button>
+        <button class="btn btn-primary-custom btn-sm" data-bs-toggle="modal" data-bs-target="#qrSessionModal">
+            <i class="fas fa-qrcode me-2"></i>Attendance QR
+        </button>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <!-- Class Tabs for Management -->
+    <div class="col-12">
+        <div class="card-stats p-4">
+            <h5 class="fw-bold mb-4"><i class="fas fa-layer-group text-primary me-2"></i>Class Management</h5>
+            
+            {% set classes = students|map(attribute='class')|unique|list %}
+            
+            <ul class="nav nav-pills mb-4" id="classTabs" role="tablist">
+                {% for class_name in classes %}
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {% if loop.first %}active{% endif %} fw-bold px-4 py-2 me-2" 
+                            id="tab-{{ class_name }}" data-bs-toggle="pill" 
+                            data-bs-target="#panel-{{ class_name }}" type="button">
+                        Class {{ class_name }}
+                    </button>
+                </li>
+                {% endfor %}
+            </ul>
+            
+            <div class="tab-content" id="classTabsContent">
+                {% for class_name in classes %}
+                <div class="tab-pane fade {% if loop.first %}show active{% endif %}" id="panel-{{ class_name }}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold text-secondary mb-0">Total Students: {{ students|selectattr('class', 'equalto', class_name)|list|length }}</h6>
+                        <div class="d-flex gap-2">
+                            <a href="{{ url_for('export_attendance', class_name=class_name) }}" class="btn btn-outline-success btn-sm">
+                                <i class="fas fa-file-csv me-2"></i>Export Attendance
+                            </a>
+                            <button class="btn btn-outline-primary btn-sm" onclick="openActivityModal('{{ class_name }}')">
+                                <i class="fas fa-tasks me-2"></i>Assign Activity
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Roll No</th>
+                                    <th>Student Name</th>
+                                    <th>Email</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in students if s.class == class_name %}
+                                <tr>
+                                    <td><span class="badge bg-light text-primary border px-3">#{{ s.roll_number }}</span></td>
+                                    <td class="fw-bold">{{ s.name }}</td>
+                                    <td class="text-secondary">{{ s.email }}</td>
+                                    <td>
+                                        <a href="{{ url_for('view_profile', student_id=s.id) }}" class="btn btn-sm text-primary">
+                                            <i class="fas fa-external-link-alt"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enroll Modal -->
+<div class="modal fade" id="enrollModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 24px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Enroll Student</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('enroll_student') }}" method="POST">
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">NAME</label>
+                        <input type="text" name="name" class="form-control form-control-custom" required>
+                    </div>
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">ROLL NUMBER</label>
+                            <input type="text" name="roll_number" class="form-control form-control-custom" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">CLASS</label>
+                            <input type="text" name="class" class="form-control form-control-custom" placeholder="e.g. 10A" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">EMAIL</label>
+                        <input type="email" name="email" class="form-control form-control-custom" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">PASSWORD</label>
+                        <input type="password" name="password" class="form-control form-control-custom" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100 py-3">Register Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- QR Session Modal -->
+<div class="modal fade" id="qrSessionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 24px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Attendance Session</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="text-secondary small mb-3">Select class to start the QR session</p>
+                <select id="qrClassSelect" class="form-select form-control-custom mb-3">
+                    {% for class_name in classes %}
+                    <option value="{{ class_name }}">{{ class_name }}</option>
+                    {% endfor %}
+                </select>
+                <button class="btn btn-primary-custom w-100" onclick="startQRSession()">Generate Live QR</button>
+                
+                <div id="qr-display-area" class="mt-4 d-none p-4 bg-light rounded-4">
+                    <img src="" id="qr-img" class="img-fluid rounded shadow-sm border mb-2">
+                    <p class="small text-success fw-bold mb-0">Session Active for <span id="active-class"></span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Modal -->
+<div class="modal fade" id="activityModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0" style="border-radius: 24px;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold">Post Activity - Class <span id="activity-class-title"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('assign_activity') }}" method="POST">
+                <div class="modal-body p-4">
+                    <input type="hidden" name="class_name" id="activity-class-input">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">TITLE</label>
+                        <input type="text" name="title" class="form-control form-control-custom" required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">INSTRUCTIONS</label>
+                        <textarea name="description" class="form-control form-control-custom" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary-custom w-100 py-3">Send to Class Stream</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function startQRSession() {
+    const className = document.getElementById('qrClassSelect').value;
+    fetch("{{ url_for('generate_qr') }}", {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({class_name: className})
+    })
+    .then(r => r.json())
+    .then(data => {
+        document.getElementById('qr-img').src = data.qr_url;
+        document.getElementById('active-class').innerText = className;
+        document.getElementById('qr-display-area').classList.remove('d-none');
+    });
+}
+
+function openActivityModal(className) {
+    document.getElementById('activity-class-title').innerText = className;
+    document.getElementById('activity-class-input').value = className;
+    new bootstrap.Modal(document.getElementById('activityModal')).show();
+}
+</script>
+<style>
+    .nav-pills .nav-link {
+        color: var(--text-secondary);
+        background: var(--bg-main);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+    }
+    .nav-pills .nav-link.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+</style>
+{% endblock %}

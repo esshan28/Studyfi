@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-5 d-flex justify-content-between align-items-center">
+    <div>
+        <h2 class="fw-bold">System Analytics</h2>
+        <p class="text-secondary text-uppercase small ls-wide">Admin Strategy & Reports</p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-secondary-custom btn-sm"><i class="fas fa-filter me-2"></i>Filter Date</button>
+        <button class="btn btn-primary-custom btn-sm"><i class="fas fa-download me-2"></i>Export All</button>
+    </div>
+</div>
+
+<div class="row g-4 mb-5">
+    <div class="col-md-3">
+        <div class="card-stats">
+            <h6 class="text-secondary small mb-3 fw-bold">TOTAL TEACHERS</h6>
+            <h2 class="fw-bold text-primary">{{ teacher_count }}</h2>
+            <div class="small text-success mt-2"><i class="fas fa-arrow-up me-1"></i> 2 new this month</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-stats">
+            <h6 class="text-secondary small mb-3 fw-bold">TOTAL STUDENTS</h6>
+            <h2 class="fw-bold text-success">{{ student_count }}</h2>
+            <div class="small text-success mt-2"><i class="fas fa-arrow-up me-1"></i> 15 new students</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-stats">
+            <h6 class="text-secondary small mb-3 fw-bold">AVG ATTENDANCE</h6>
+            <h2 class="fw-bold text-warning">88.4%</h2>
+            <div class="progress mt-3" style="height: 6px;">
+                <div class="progress-bar bg-warning" style="width: 88%"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card-stats">
+            <h6 class="text-secondary small mb-3 fw-bold">ACTIVE CLASSES</h6>
+            <h2 class="fw-bold text-info">12</h2>
+            <div class="small text-muted mt-2">Across 4 departments</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card-stats">
+            <h5 class="fw-bold mb-4">Class-wise Attendance Performance</h5>
+            <canvas id="attendanceChart" height="300"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card-stats h-100">
+            <h5 class="fw-bold mb-4">Quick Statistics</h5>
+            <div class="table-responsive">
+                <table class="table table-borderless align-middle mb-0">
+                    <tbody class="small">
+                        {% for label in chart_labels %}
+                        <tr class="border-bottom">
+                            <td class="ps-0 py-3">
+                                <span class="fw-bold text-primary">{{ label }}</span>
+                            </td>
+                            <td class="text-end py-3">
+                                <span class="fw-bold">{{ chart_data[loop.index0]|round(1) }}%</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {{ chart_labels|tojson }},
+            datasets: [{
+                label: 'Attendance %',
+                data: {{ chart_data|tojson }},
+                backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                borderColor: 'rgba(79, 70, 229, 1)',
+                borderWidth: 2,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: 'rgba(0,0,0,0.05)' }
+                },
+                x: {
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+</script>
+{% endblock %}

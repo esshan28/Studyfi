@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyFI – Smart Education System</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if session.user_id %}
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <a href="{{ url_for('index') }}" class="sidebar-brand">
+            <i class="fas fa-graduation-cap me-2"></i>StudyFI
+        </a>
+        
+        <nav class="nav flex-column">
+            {% if session.role == 'admin' %}
+                <a class="nav-link-custom {{ 'active' if request.endpoint == 'admin_dashboard' }}" href="{{ url_for('admin_dashboard') }}">
+                    <i class="fas fa-columns"></i> Dashboard
+                </a>
+                <a class="nav-link-custom" href="#">
+                    <i class="fas fa-chalkboard-teacher"></i> Teachers
+                </a>
+                <a class="nav-link-custom" href="#">
+                    <i class="fas fa-users"></i> All Students
+                </a>
+                <a class="nav-link-custom {{ 'active' if request.endpoint == 'admin_reports' }}" href="{{ url_for('admin_reports') }}">
+                    <i class="fas fa-chart-pie"></i> Reports
+                </a>
+            {% elif session.role == 'teacher' %}
+                <a class="nav-link-custom {{ 'active' if request.endpoint == 'teacher_dashboard' }}" href="{{ url_for('teacher_dashboard') }}">
+                    <i class="fas fa-columns"></i> Dashboard
+                </a>
+                <a class="nav-link-custom" href="#">
+                    <i class="fas fa-user-plus"></i> Enrollment
+                </a>
+                <a class="nav-link-custom" href="#">
+                    <i class="fas fa-clipboard-list"></i> Activities
+                </a>
+                <a class="nav-link-custom" href="#">
+                    <i class="fas fa-calendar-alt"></i> Attendance
+                </a>
+            {% elif session.role == 'student' %}
+                <a class="nav-link-custom {{ 'active' if request.endpoint == 'student_dashboard' }}" href="{{ url_for('student_dashboard') }}">
+                    <i class="fas fa-columns"></i> Dashboard
+                </a>
+                <a class="nav-link-custom" href="#">
+                    <i class="fas fa-tasks"></i> My Activities
+                </a>
+            {% endif %}
+            
+            <div class="mt-auto pt-5">
+                <a class="nav-link-custom text-danger" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+        <header class="top-header">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-light rounded-circle me-3" id="theme-toggle" title="Toggle Dark Mode">
+                    <i class="fas fa-moon"></i>
+                </button>
+                <div class="me-4 text-end d-none d-sm-block">
+                    <p class="mb-0 fw-bold">{{ session.name }}</p>
+                    <small class="text-muted">{{ session.role|capitalize }}</small>
+                </div>
+                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
+                    <i class="fas fa-user"></i>
+                </div>
+            </div>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'danger' else 'danger' }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert" style="border-radius: 12px;">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <main class="fade-in">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    {% else %}
+        <!-- Simple content for non-logged in users (auth pages) -->
+        <main>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="container mt-4">
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }} alert-dismissible fade show border-0 shadow-sm" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+            {% block auth_content %}{% endblock %}
+        </main>
+    {% endif %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
